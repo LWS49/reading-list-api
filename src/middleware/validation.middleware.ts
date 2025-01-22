@@ -4,16 +4,19 @@ export const validateAuth = (req: Request, res: Response, next: NextFunction) =>
     const { email, password } = req.body;
     
     if (!email || !password) {
-        return res.status(400).json({ message: "Email and password required" });
+        res.status(400).json({ message: "Email and password required" });
+        return;
     }
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        return res.status(400).json({ message: "Invalid email format" });
+        res.status(400).json({ message: "Invalid email format" });
+        return;
     }
     
     if (password.length < 6) {
-        return res.status(400).json({ message: "Password must be at least 6 characters" });
+        res.status(400).json({ message: "Password must be at least 6 characters" });
+        return;
     }
     
     next();
