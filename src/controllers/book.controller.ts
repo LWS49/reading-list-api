@@ -7,16 +7,6 @@ import { AppError } from '../utils/errors';
 export class BookController {
     private bookService = new BookService();
 
-    /**
-     * Creates a new book entry for the user.
-     * The function retrieves the user ID from the authenticated request and calls the service
-     * layer to create the book. Upon success, a 201 status code is returned along with the 
-     * created book data. If an error occurs, it is passed to the next error-handling middleware.
-     * 
-     * @param {Request} req - The request object containing user and book data.
-     * @param {Response} res - The response object used to send the created book data.
-     * @param {NextFunction} next - The next middleware function for error handling.
-     */
     async createBook(req: Request, res: Response, next: NextFunction) {
         try {
             if (!req.user) {
@@ -30,17 +20,7 @@ export class BookController {
             next(error);
         }
     }
-
-    /**
-     * Updates the reading progress of a specific book for the user.
-     * The function verifies the user's identity, retrieves the book ID from the request parameters,
-     * and calls the service layer to update the reading progress. The updated progress is returned
-     * in the response. If any error occurs, it is passed to the next middleware.
-     * 
-     * @param {Request} req - The request object containing the book ID, progress data, and user information.
-     * @param {Response} res - The response object used to send the updated progress data.
-     * @param {NextFunction} next - The next middleware function for error handling.
-     */    
+  
     async updateProgress(req: Request, res: Response, next: NextFunction) {
         try {
             if (!req.user) {
@@ -59,16 +39,6 @@ export class BookController {
         }
     }
 
-    /**
-     * Retrieves the reading progress of a specific book for the user.
-     * The function retrieves the book ID from the request parameters, validates the user,
-     * and fetches the book data along with its reading progress from the service layer. 
-     * The book data is returned in the response. Any errors are passed to the next error handler.
-     * 
-     * @param {Request} req - The request object containing the book ID and user information.
-     * @param {Response} res - The response object used to send the book and progress data.
-     * @param {NextFunction} next - The next middleware function for error handling.
-     */
     async getBookProgress(req: Request, res: Response, next: NextFunction) {
         try {
             if (!req.user) {
@@ -81,6 +51,59 @@ export class BookController {
                 userId
             );
             res.json(book);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updateBook(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.user) {
+                throw new AppError(401, 'Unauthorized');
+            }
+            const { bookId } = req.params;
+            const userId = req.user.id;
+            const updatedBook = await this.bookService.updateBook(
+                parseInt(bookId),
+                userId,
+                req.body
+            );
+            res.json(updatedBook);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteBook(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.user) {
+                throw new AppError(401, 'Unauthorized');
+            }
+            const { bookId } = req.params;
+            const userId = req.user.id;
+            await this.bookService.deleteBook(
+                parseInt(bookId),
+                userId
+            );
+            res.status(204).send(); // No content
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async listBooks(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.user) {
+                throw new AppError(401, 'Unauthorized');
+            }
+            const userId = req.user.id;
+            const { page, limit, search } = req.query;
+            const result = await this.bookService.listBooks(userId, {
+                page: page ? parseInt(page as string) : undefined,
+                limit: limit ? parseInt(limit as string) : undefined,
+                search: search as string
+            });
+            res.json(result);
         } catch (error) {
             next(error);
         }
