@@ -1,3 +1,4 @@
+/// <reference path="../types/express.d.ts" />
 import axios from 'axios';
 import AppDataSource from '../config/database';
 import { Book } from '../models/Book';
@@ -85,5 +86,42 @@ export class BookService {
         }
 
         return book;
+    }
+
+    async updateBook(bookId: number, userId: number, bookData: Partial<Book>): Promise<Book> {
+        const book = await this.bookRepository.findOne({
+            where: { id: bookId, user: { id: userId } }
+        });
+
+        if (!book) {
+            throw new AppError(404, 'Book not found');
+        }
+
+        // Update book fields, preserving existing data
+        Object.assign(book, bookData);
+
+        // Re-enrich ISBN data if provided
+        if (bookData.isbn) {
+            const metadata = await this.validateAndEnrichISBN(bookData.isbn);
+            if (metadata) {
+                book.metadata = metadata;
+                book.title = book.title || metadata.title;
+                book.author = book.author || metadata.authors?.[0]?.name;
+                book.coverUrl = book.coverUrl || metadata.cover?.large;
+            }
+        }
+
+        return this.bookRepository.save(book);
+    }
+
+    async deleteBook(bookId: number, userId: number): Promise<void> {
+        const result = await this.bookRepository.delete({
+            id: bookId,
+            user: { id: userId }
+        });
+
+        if (result.affected === 0) {
+            throw new AppError(404, 'Book not found');
+        }
     }
 }
