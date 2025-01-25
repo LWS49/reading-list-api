@@ -1,17 +1,44 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import AppDataSource from "./config/database";
 import authRoutes from './routes/auth.routes';
+import bookRoutes from './routes/book.routes'
 import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
 
+// Logging middleware to track all requests
+app.use((req, res, next) => {
+    console.log(`Received ${req.method} request to ${req.path}`);
+    next();
+});
+
 app.use(express.json());
+
+// Test route for debugging
+app.get('/test', (req: Request, res: Response) => {
+    res.send('Test route');
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/books', bookRoutes);
+
+// Catch-all route to log unhandled routes
+app.use((req, res, next) => {
+    console.log('Unhandled route:', req.path);
+    next();
+});
 
 // Error handling middleware should be last
 app.use(errorHandler);
+
+console.log("Registered routes:");
+app._router.stack.forEach((r: any) => {
+    if (r.route && r.route.path) {
+        console.log(`Path: ${r.route.path}`);
+    }
+});
+
 
 // Database Connection
 AppDataSource.initialize()
