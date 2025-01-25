@@ -124,4 +124,40 @@ export class BookService {
             throw new AppError(404, 'Book not found');
         }
     }
+
+    async listBooks(userId: number, options: {
+        page?: number, 
+        limit?: number, 
+        search?: string
+    } = {}): Promise<{ books: Book[], total: number }> {
+        const { 
+            page = 1, 
+            limit = 10, 
+            search 
+        } = options;
+
+        const queryBuilder = this.bookRepository.createQueryBuilder('book')
+            .where('book.user.id = :userId', { userId })
+            .orderBy('book.createdAt', 'DESC');
+
+        // Optional search functionality
+        if (search) {
+            queryBuilder.andWhere(
+                '(book.title ILIKE :search OR book.author ILIKE :search)', 
+                { search: `%${search}%` }
+            );
+        }
+
+        const total = await queryBuilder.getCount();
+        
+        const books = await queryBuilder
+            .skip((page - 1) * limit)
+            .take(limit)
+            .getMany();
+
+        return { 
+            books, 
+            total 
+        };
+    }
 }
