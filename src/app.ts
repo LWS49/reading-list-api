@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import AppDataSource from "./config/database";
+import { AppDataSource } from "./config/database";
 import authRoutes from './routes/auth.routes';
 import bookRoutes from './routes/book.routes'
 import { errorHandler } from './middleware/error.middleware';
@@ -41,11 +41,17 @@ app._router.stack.forEach((r: any) => {
 
 
 // Database Connection
+// Database Connection
 AppDataSource.initialize()
     .then(() => {
         console.log("Database connected");
-        app.listen(3000, () => {
-            console.log('Server running on port 3000');
-        });
+        // Check if not in test environment before starting the server
+        if (process.env.NODE_ENV !== 'test') {
+            app.listen(3000, () => {
+                console.log('Server running on port 3000');
+            });
+        }
     })
     .catch((error) => console.log(error));
+
+export default app;
