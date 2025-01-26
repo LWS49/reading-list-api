@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const AppDataSource = new DataSource({
+export const AppDataSource = new DataSource({
     type: "postgres",
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || "5432"),
@@ -11,8 +11,18 @@ const AppDataSource = new DataSource({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     entities: ["src/models/*.ts"],
-    synchronize: true, // Disable in production
-    logging: true
+    synchronize: process.env.NODE_ENV === 'test',
+    logging: false,
+    poolSize: 10,
 });
 
-export default AppDataSource;
+export async function closeDatabase() {
+    try {
+        if (AppDataSource.isInitialized) {
+            await AppDataSource.destroy();
+            console.log('Database connection closed');
+        }
+    } catch (error) {
+        console.error('Error closing database connection:', error);
+    }
+}
