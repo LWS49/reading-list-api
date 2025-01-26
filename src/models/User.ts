@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } f
 import { ReadingProgress } from "./ReadingProgress";
 import { Book } from "./Book";
 
-@Entity()
+@Entity('user') 
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
