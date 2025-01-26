@@ -1,35 +1,17 @@
-// __tests__/setup.ts
-import AppDataSource from '../config/database';
+import { AppDataSource, closeDatabase } from '../config/database';
 import { DataSource } from 'typeorm';
 
-// Custom database reset function
 export async function resetDatabase(dataSource: DataSource) {
     const entities = dataSource.entityMetadatas;
 
-    // Disable foreign key checks
-    await dataSource.query('PRAGMA foreign_keys = OFF;');
+    // Disable foreign key checks for PostgreSQL
+    await dataSource.query('SET session_replication_role = replica;');
 
-    // Clear tables in reverse order of their dependencies
+    // Truncate tables in reverse order of their dependencies
     for (const entity of entities) {
-        const repository = dataSource.getRepository(entity.name);
-        await repository.query(`DELETE FROM "${entity.tableName}"`);
+        await dataSource.query(`TRUNCATE TABLE "${entity.tableName}" CASCADE;`);
     }
 
     // Re-enable foreign key checks
-    await dataSource.query('PRAGMA foreign_keys = ON;');
+    await dataSource.query('SET session_replication_role = origin;');
 }
-
-// Global setup for Jest
-export default async () => {
-    // Ensure database connection
-    if (!AppDataSource.isInitialized) {
-        await AppDataSource.initialize();
-    }
-};
-
-// Global teardown for Jest
-export const teardown = async () => {
-    if (AppDataSource.isInitialized) {
-        await AppDataSource.destroy();
-    }
-};
