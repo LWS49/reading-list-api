@@ -41,7 +41,6 @@ app._router.stack.forEach((r: any) => {
 
 
 // Database Connection
-// Database Connection
 AppDataSource.initialize()
     .then(() => {
         console.log("Database connected");
