@@ -81,6 +81,8 @@ export class BookController {
             }
             const { bookId } = req.params;
             const userId = req.user.id;
+            await this.bookService.removeReadingProgress(parseInt(bookId)); // Remove related progress before deleting the book
+            
             await this.bookService.deleteBook(
                 parseInt(bookId),
                 userId
@@ -98,10 +100,15 @@ export class BookController {
             }
             const userId = req.user.id;
             const { page, limit, search } = req.query;
+
+            const pageNumber = page && !isNaN(Number(page)) ? parseInt(page as string) : 1; // Default to 1 if not valid
+            const limitNumber = limit && !isNaN(Number(limit)) ? parseInt(limit as string) : 10; // Default to 10 if not valid
+            const searchTerm = search ? (search as string) : ''; // Default to empty string if not provided
+
             const result = await this.bookService.listBooks(userId, {
-                page: page ? parseInt(page as string) : undefined,
-                limit: limit ? parseInt(limit as string) : undefined,
-                search: search as string
+                page: pageNumber,
+                limit: limitNumber,
+                search: searchTerm
             });
             res.json(result);
         } catch (error) {
