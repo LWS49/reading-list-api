@@ -124,6 +124,19 @@ export class BookService {
             throw new AppError(404, 'Book not found');
         }
     }
+   
+    async removeReadingProgress(bookId: number): Promise<void> {
+        const progressRepository = AppDataSource.getRepository(ReadingProgress);
+    
+        // Remove all reading progress records associated with the book
+        const result = await progressRepository.delete({ book: { id: bookId } });
+    
+        if (result.affected === 0) {
+            console.log('No reading progress found for the book');
+        } else {
+            console.log(`${result.affected} reading progress record(s) removed`);
+        }
+    }
 
     async listBooks(userId: number, options: {
         page?: number, 
@@ -136,6 +149,8 @@ export class BookService {
             search 
         } = options;
 
+        console.log(page + " " + limit + " " + search);
+        
         const queryBuilder = this.bookRepository.createQueryBuilder('book')
             .where('book.user.id = :userId', { userId })
             .orderBy('book.createdAt', 'DESC');
