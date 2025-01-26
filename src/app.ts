@@ -3,16 +3,18 @@ import { AppDataSource } from "./config/database";
 import authRoutes from './routes/auth.routes';
 import bookRoutes from './routes/book.routes'
 import { errorHandler } from './middleware/error.middleware';
+import { requestLoggingMiddleware } from './middleware/logging.middleware';
 
 const app = express();
+
+app.use(express.json());
+app.use(requestLoggingMiddleware);
 
 // Logging middleware to track all requests
 app.use((req, res, next) => {
     console.log(`Received ${req.method} request to ${req.path}`);
     next();
 });
-
-app.use(express.json());
 
 // Test route for debugging
 app.get('/test', (req: Request, res: Response) => {
