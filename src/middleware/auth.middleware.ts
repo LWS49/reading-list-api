@@ -30,9 +30,14 @@ export const authMiddleware = async (
             throw new AppError(401, 'Invalid authentication format');
         }
 
-        console.error('Attempting to verify token');
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'hD1X7er03H8CBTYFXwoM') as JwtPayload;
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET || 'hD1X7er03H8CBTYFXwoM') as JwtPayload;
+            console.log('Token decoded:', decoded); // Log the decoded token
+        } catch (err) {
+            console.error('JWT Verification Error:', err);
+            throw new AppError(401, 'Invalid or expired token');
+        }
 
         const userRepository = AppDataSource.getRepository(User);
         const user = await userRepository.findOne({ 
@@ -41,6 +46,7 @@ export const authMiddleware = async (
         });
 
         if (!user) {
+            console.error('User not found for ID:', decoded.userId);
             throw new AppError(401, 'User not found');
         }
 
