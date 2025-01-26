@@ -1,5 +1,5 @@
 import { Request, Response, RequestHandler } from 'express';
-import AppDataSource from '../config/database';
+import { AppDataSource } from '../config/database';
 import { User } from '../models/User';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';

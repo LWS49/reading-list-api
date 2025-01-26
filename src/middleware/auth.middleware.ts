@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors';
 import jwt from 'jsonwebtoken';
-import AppDataSource from '../config/database';
+import { AppDataSource } from '../config/database';
 import { User } from '../models/User';
 
 interface JwtPayload {

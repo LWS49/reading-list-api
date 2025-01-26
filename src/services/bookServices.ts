@@ -1,6 +1,6 @@
 /// <reference path="../types/express.d.ts" />
 import axios from 'axios';
-import AppDataSource from '../config/database';
+import { AppDataSource } from '../config/database';
 import { Book } from '../models/Book';
 import { AppError } from '../utils/errors';
 import { ReadingProgress } from '../models/ReadingProgress';
@@ -72,9 +72,9 @@ export class BookService {
 
     async getBookWithProgress(bookId: number, userId: number): Promise<Book> {
         const book = await this.bookRepository.findOne({
-            where: { id: bookId, user: { id: userId } },
-            relations: ['readingProgress'],
-            order: {
+            where: { id: bookId, user: { id: userId } }, // 1. Filter by book ID and user ID
+            relations: ['readingProgress'],             // 2. Include related readingProgress
+            order: {                                    // 3. Order related readingProgress by readingDate in DESC order
                 readingProgress: {
                     readingDate: 'DESC'
                 }
