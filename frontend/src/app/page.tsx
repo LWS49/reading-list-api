@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50">
@@ -12,6 +14,13 @@ export default function Home() {
       <section className="max-w-4xl mx-auto p-6">
         <h2 className="text-2xl font-semibold mb-4">Reading List</h2>
         <p className="text-gray-600">Your reading list will appear here.</p>
+
+        <Link
+          href="/entries"
+          className="inline-block border bg-white hover:shadow"
+        >
+          Go to Entries
+        </Link>
       </section>
     </main>
   );
