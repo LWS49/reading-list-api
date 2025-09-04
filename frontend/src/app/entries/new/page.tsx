@@ -45,7 +45,7 @@ export default function NewEntryPage() {
     const onSubmit = async (values: CreateBookInput) => {
         setIsSubmitting(true);
         try {
-            const res = await fetch("/api/books", {
+            const res = await fetch("/api/entries", {
                 method: "POST", 
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values)
