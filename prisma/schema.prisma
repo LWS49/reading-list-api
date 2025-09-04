@@ -1,0 +1,29 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../frontend/node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Book {
+  id         String    @id @default(uuid())
+  title      String
+  author     String?             // optional string
+  status     ReadingStatus       // enum type, defined below
+  startedAt  DateTime?           // optional datetime
+  finishedAt DateTime?           // optional datetime
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+enum ReadingStatus {
+  unread
+  reading
+  finished
+}
