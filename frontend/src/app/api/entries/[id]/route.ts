@@ -1,4 +1,5 @@
 import { Book } from "@/types/book";
+import { prisma } from "@lib/prisma";
 import { NextResponse } from "next/server";
 
 // Access the shared in-memory list
@@ -33,13 +34,12 @@ export async function PUT(req: Request, { params }: { params: { id: string }}){
 
 // DELETE /api/reading-list/:id → remove a book
 export async function DELETE(req: Request, { params }: { params: { id: string }}) {
-    const index = readingList.findIndex((item) => item.id === params.id);
-
-    if (index === -1) {
-        return NextResponse.json({ error: "Book not found" }, { status: 404});
+    try {
+        await prisma.book.delete({
+            where: { id: params.id },
+        });
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        return NextResponse.json({ error: "Failed to delete entry"}, { status: 500 });
     }
-
-    // removes 1 item starting at pos index in-place, and returns the first item (the deleted book)
-    const deleted = readingList.splice(index, 1)[0];
-    return NextResponse.json(deleted, {status: 200});
 }
