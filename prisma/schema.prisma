@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../frontend/node_modules/.prisma/client"
 }
 
 datasource db {
@@ -10,9 +11,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Entry {
-  id        String      @id @default(uuid())
-  title     String
-  content   String
-  createdAt DateTime @default(now())
+model Book {
+  id         String    @id @default(uuid())
+  title      String
+  author     String?             // optional string
+  status     ReadingStatus       // enum type, defined below
+  startedAt  DateTime?           // optional datetime
+  finishedAt DateTime?           // optional datetime
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+enum ReadingStatus {
+  unread
+  reading
+  finished
 }
