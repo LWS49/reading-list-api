@@ -12,34 +12,31 @@ const prisma = new PrismaClient();
 const allowedStatuses = Object.values(ReadingStatus) as string[];
 
 /*
+Rule of Thumb
+api/entries/route.ts → collection-level routes
+- GET → fetch all entries
+- POST → create a new entry
+
+api/entries/[id]/route.ts → item-level routes
+- GET → fetch a single entry by ID
+- PUT/PATCH → update an entry
+- DELETE → delete an entry
+*/
+
+
+/*
 Handles GET requests to this API route, and returns the array as JSON.
 */
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const url = new URL(req.url);
-    const status = url.searchParams.get("status");
-
-    if (status && !allowedStatuses.includes(status)) {
-      return NextResponse.json(
-        { error: `Invalid status ${status}. Allowed statuses: ${allowedStatuses.join(", ")}`}, 
-        { status: 400 }
-      )
-    }
-
-    let where = {};
-    if (status && ["unread", "reading", "finished"].includes(status)) {
-        where = { status: status as ReadingStatus };
-    }
     const books = await prisma.book.findMany({
-      where,
       orderBy: { createdAt: "desc" }
     })
-
-    return NextResponse.json(books, { status: 200 })
-  } catch (e) {
-    console.error("GET /api/entries error: ", e);
-    return NextResponse.json({ error: "Failed to fetch entries."}, { status: 500 })
+    return NextResponse.json(books)
+  } catch (error) {
+    console.log("GET /entries error: ", error)
+    return NextResponse.json({ error: "Failed to fetch entries" }, { status: 500})
   }
 }
 
@@ -70,7 +67,7 @@ export async function POST(req: Request) {
     console.error("POST /api/entries error: ", e);
 
     if (e instanceof ZodError) {
-      return NextResponse.json({ error: e.errors }, { status: 400 });
+      return NextResponse.json({ error: e.issues }, { status: 400 });
     }
 
     return NextResponse.json({ error: "Failed to create entry." }, { status: 500 });
