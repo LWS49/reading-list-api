@@ -73,7 +73,9 @@ export default function EntriesPage() {
                     {books.map((book) => (
                         <Card key={book.id} className="shadow-sm">
                             <CardHeader>
-                                <CardTitle>{book.title}</CardTitle>
+                                <Link href={`/entries/${book.id}`}>
+                                    <CardTitle>{book.title}</CardTitle>
+                                </Link>
                             </CardHeader>
                             <CardContent>
                                 {book.author && (
