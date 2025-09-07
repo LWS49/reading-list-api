@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { Book } from "@/types/book"
+import EntryClient from "./EntryClient.tsx"
 
 // cache: "no-store" prevents caching (ensures fresh data on every request).
 async function getEntry(id: string): Promise<Book | null> {
@@ -16,12 +17,5 @@ export default async function EntryPage( context: { params: Promise<{ id: string
     
     const entry = await getEntry(id)
     if (!entry) notFound()
-    console.log("entry data: ", entry)
-    return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold">{entry.title}</h1>
-            <p>{entry.author}</p>
-            <p>Status: {entry.status}</p>
-        </div>
-    )
+    return <EntryClient entry={entry} />
 }

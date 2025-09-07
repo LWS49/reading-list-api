@@ -1,11 +1,7 @@
-import { Book } from "@/types/book";
 import { prisma } from "@lib/prisma";
-import { Prisma } from "@prisma/client";
+import { Book, Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { handlePrismaNotFound } from "@/lib/apiResponse";
-
-// Access the shared in-memory list
-const readingList: Book[] = globalThis.readingList || (globalThis.readingList = []);
 
 // GET /api/reading-list/:id → get a single book
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
@@ -32,23 +28,34 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 }
 
 // PATCH /api/reading-list/:id → update a book
-export async function PATCH(req: Request, { params }: { params: {id: string}}) {
-    try {
-        const updates = await req.json()
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
+  try {
+    const body = await req.json()
 
-        const updated = await prisma.book.update({
-            where: { id: params.id },
-            data: updates,
-        })
-
-        return NextResponse.json({ success: true, data: updated})
-    } catch (error) {
-        const handled = handlePrismaNotFound(error)
-        if (handled) return handled
-
-        console.log("PATCH /entries/:id error: ", error)
-        return NextResponse.json({ error: "Failed to update book" }, { status: 500 })
+    const { title, author, status, startedAt, finishedAt } = body
+    // Use Partial to allow optional properties
+    const data: Partial<Omit<Book, "id" | "createdAt" | "updatedAt">> = {};
+    if (title !== undefined) data.title = title
+    if (author !== undefined) data.author = author
+    if (status !== undefined) data.status = status
+    if (startedAt !== undefined) {
+      data.startedAt = startedAt ? new Date(startedAt) : null
     }
+    if (finishedAt !== undefined) {
+      data.finishedAt = finishedAt ? new Date(finishedAt) : null
+    }
+
+    const { id } = await context.params 
+    const updatedBook = await prisma.book.update({
+      where: { id },
+      data
+    })
+
+    return NextResponse.json(updatedBook, { status: 200})
+  } catch (error) {
+    console.log("PATCH /api/entries/:id error: ", error)
+    return NextResponse.json({ error: "Failed to update book" }, { status: 500 })
+  }
 }
 
 // DELETE /api/reading-list/:id → remove a book
