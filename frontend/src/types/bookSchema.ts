@@ -23,6 +23,7 @@ export const createBookSchema = bookSchema.pick({
   author: true,
   status: true,
   startedAt: true,
+  finishedAt: true,
 });
 
 
