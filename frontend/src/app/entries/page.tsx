@@ -10,13 +10,29 @@ export default function EntriesPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null);
 
+    const [search, setSearch] = useState("")
+    const [searchInput, setSearchInput] = useState("")
+    const [status, setStatus] = useState("")
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+
     useEffect(() => {
         async function fetchBooks() {
             try {
-                const res = await fetch("/api/entries");
+                setLoading(true)
+                const query = new URLSearchParams({
+                    search, 
+                    status, 
+                    page: page.toString(),
+                    limit: "5",
+                }).toString()
+
+                const res = await fetch(`/api/entries?${query}`);
                 if (!res.ok) throw new Error("Failed to fetch entries");
-                const data = await res.json();
+                
+                const { data, pagination } = await res.json();
                 setBooks(data)
+                setTotalPages(pagination.totalPages)
             } catch (e) {
                 if (e instanceof Error) {
                     setError(e.message);
@@ -29,7 +45,7 @@ export default function EntriesPage() {
             }
         }
         fetchBooks()
-    }, [])
+    }, [search, status, page])
 
     async function handleDelete(id: string) {
         const res = await fetch(`api/entries/${id}`, {
@@ -66,6 +82,33 @@ export default function EntriesPage() {
                 </Link>
             </div>
 
+            {/* Search + Filter */}
+            <div className="flex gap-2 mb-4">
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchInput} 
+                    onChange={e => setSearchInput(e.target.value)}
+                    className="border rounded px-3 py-2 w-full"
+                />
+                <button
+                    onClick={() => setSearch(searchInput)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                    Search
+                </button>
+                <select
+                    value={status}
+                    onChange={e => setStatus(e.target.value)}
+                    className="border rounded px-3 py-2"
+                >
+                    <option value="">All</option>
+                    <option value="unread">Unread</option>
+                    <option value="reading">Reading</option>
+                    <option value="finished">Finished</option>
+                </select>
+            </div>
+
             {books.length === 0 ? (
                 <p className="text-gray-600">No entries yet. Make your own book!</p>
             ) : (
@@ -96,6 +139,27 @@ export default function EntriesPage() {
                     ))}
                 </ul>
             )}
+
+            {/* Pagination */}
+            <div>
+                <button
+                    disabled = {page <= 1}
+                    onClick={() => setPage(p => p - 1)}
+                    className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                    Prev
+                </button>
+                <span>
+                    Page {page} of {totalPages}
+                </span>
+                <button
+                    disabled={page >= totalPages}
+                    onClick={() => setPage(p => p + 1)}
+                    className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                    Next
+                </button>
+            </div>
         </div>
     )
 }

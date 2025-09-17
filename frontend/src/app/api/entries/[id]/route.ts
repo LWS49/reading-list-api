@@ -1,12 +1,13 @@
 import { prisma } from "@lib/prisma";
-import { Book, Prisma } from "@prisma/client";
+import { Book } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { handlePrismaNotFound } from "@/lib/apiResponse";
 
+// Future augmentation: search with date range for startedAt/finishedAt
 // GET /api/reading-list/:id → get a single book
-export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
-    // params is now async - you must await it before accessing its properties
-    const { id } = await context.params 
+
+export async function GET(req: Request, context: { params: { id: string } }) {    // params is now async - you must await it before accessing its properties
+    const { id } = context.params 
 
     try {
         const book = await prisma.book.findUnique({
@@ -14,21 +15,21 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
         })
 
         if (!book) {
-            return NextResponse.json({error: "Book not found" }, { status: 404})
+            return NextResponse.json({error: "Book not found" }, { status: 404 })
         }
 
-        return NextResponse.json({book})
+        return NextResponse.json({book}) // shorthand for { book: book }
     } catch (error) {
         const handled = handlePrismaNotFound(error)
         if (handled) return handled
 
         console.log("GET /entries/:id error: ", error)
-        return NextResponse.json({error: "Failed to fetch book" }, { status: 500})
+        return NextResponse.json({error: "Failed to fetch book" }, { status: 500 })
     }
 }
 
 // PATCH /api/reading-list/:id → update a book
-export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
+export async function PATCH(req: Request, context: { params: { id: string } }) {
   try {
     const body = await req.json()
 
@@ -45,7 +46,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       data.finishedAt = finishedAt ? new Date(finishedAt) : null
     }
 
-    const { id } = await context.params 
+    const { id } = context.params 
     const updatedBook = await prisma.book.update({
       where: { id },
       data

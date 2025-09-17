@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { Book } from "@/types/book"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 
 export default function EntryClient({ entry }: { entry: Book }){
      console.log("EntryClient received entry:", entry)
@@ -110,9 +109,9 @@ export default function EntryClient({ entry }: { entry: Book }){
 
             <div className="flex gap-4">
                 <button
-                type="submit"
-                disabled={saving}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    type="submit"
+                    disabled={saving}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 >
                     {saving ? "Saving..." : "Save Changes"}
                 </button>
