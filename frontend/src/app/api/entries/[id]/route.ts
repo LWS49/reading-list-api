@@ -6,9 +6,8 @@ import { handlePrismaNotFound } from "@/lib/apiResponse";
 // Future augmentation: search with date range for startedAt/finishedAt
 // GET /api/reading-list/:id → get a single book
 
-export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
-    // params is now async - you must await it before accessing its properties
-    const { id } = await context.params 
+export async function GET(req: Request, context: { params: { id: string } }) {    // params is now async - you must await it before accessing its properties
+    const { id } = context.params 
 
     try {
         const book = await prisma.book.findUnique({
@@ -30,7 +29,7 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 }
 
 // PATCH /api/reading-list/:id → update a book
-export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
+export async function PATCH(req: Request, context: { params: { id: string } }) {
   try {
     const body = await req.json()
 
@@ -47,7 +46,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       data.finishedAt = finishedAt ? new Date(finishedAt) : null
     }
 
-    const { id } = await context.params 
+    const { id } = context.params 
     const updatedBook = await prisma.book.update({
       where: { id },
       data
